@@ -25,12 +25,3 @@ void setup() {
   mg.generateMap();
   mg.displayMap();
 }
-
-void draw() {
-}
-
-void mousePressed(){
-  noiseSeed((int)random(999999));  
-  mg.generateMap();
-  mg.displayMap();
-}

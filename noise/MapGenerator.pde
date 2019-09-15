@@ -36,10 +36,14 @@ public class MapGenerator {
     // Init variables génération
     noiseValues = new float[w][h];
     noiseValuesOneDimension = new float[w * h];
+    
+    obstacleTiles = new ArrayList<Float>();
+    foodTiles = new ArrayList<Float>();
+    
     waterTileColor = color(52, 207, 235);
     foodTileColor = color(229, 235, 52);
     emptyTileColor = color(156, 114, 9);
-    obstacleTileColor = color(125, 125, 125);
+    obstacleTileColor = color(255, 0, 0);
   }
   
   // Génère la map à partir des paramètres initialisés
@@ -75,34 +79,40 @@ public class MapGenerator {
     
     // obstacles
     int amountOfObstacleTiles = (int)((noiseValuesOneDimension.length - waterThresholdIndex) * obstacleTilesPercentage);
-    obstacleTiles = new ArrayList<Float>();
-    for (int o = 0; o < amountOfObstacleTiles; o++) {
-      obstacleTiles.add(noiseValuesOneDimension[(int)random(waterThresholdIndex, noiseValuesOneDimension.length)]); 
+    int o = 0;
+    while (o < amountOfObstacleTiles) {
+      float obstacleTileNoiseValue = noiseValuesOneDimension[(int)random(waterThresholdIndex, noiseValuesOneDimension.length)];
+      if (!obstacleTiles.contains(obstacleTileNoiseValue)) {
+        obstacleTiles.add(obstacleTileNoiseValue);
+        o++;
+      }
     }
     
     // nourriture
     int amountOfFoodTiles = (int)((noiseValuesOneDimension.length - waterThresholdIndex) * foodTilesPercentage);
-    foodTiles = new ArrayList<Float>();
-    for (int f = 0; f < amountOfFoodTiles; f++) {
-      foodTiles.add(noiseValuesOneDimension[(int)random(waterThresholdIndex, noiseValuesOneDimension.length)]);
+    int f = 0;
+    while (f < amountOfFoodTiles) {
+      float foodTileNoiseValue = noiseValuesOneDimension[(int)random(waterThresholdIndex, noiseValuesOneDimension.length)];
+      if (!obstacleTiles.contains(foodTileNoiseValue) && !foodTiles.contains(foodTileNoiseValue)) {
+        foodTiles.add(foodTileNoiseValue);
+        f++;
+      }
     }
   }
   
   // Affiche la map à l'écran
   public void displayMap() {
-    int count = 0;
     // Enregistrement des nouvelles valeurs des pixels
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         if (noiseValues[x][y] < waterThreshold) {
           pixels[x+y*width] = waterTileColor;
         } 
-        // REMARQUE : il faut répartir aléatoirement les obstacles et la nourriture sur les tiles terrestres, attention à ce qu'il n'y en ait pas qui se répètent!
-        else if (obstacleTiles.contains(noiseValues[x][y])) {
+        // REMARQUE : Il reste à gérer le cas où certaines cases se répètent
+        else if (obstacleTiles.contains(noiseValues[x][y]) && pixels[x+y*width] != obstacleTileColor) {
           pixels[x+y*width] = obstacleTileColor;
         }
-        else if (foodTiles.contains(noiseValues[x][y])) {
-          count++;
+        else if (foodTiles.contains(noiseValues[x][y]) && pixels[x+y*width] != foodTileColor) {
           pixels[x+y*width] = foodTileColor;
         }
         else {
@@ -110,7 +120,7 @@ public class MapGenerator {
         }          
       }
     }
-    println(count);
+    
     // Affichage des pixels
     updatePixels();
   }
