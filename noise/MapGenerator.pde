@@ -1,4 +1,4 @@
-import java.util.Arrays;
+import java.util.*;
 
 public class MapGenerator {
   
@@ -21,7 +21,9 @@ public class MapGenerator {
   float[] noiseValuesOneDimension;
   
   // Stockage des valeurs qui seront déterminées pour seuiller les valeurs de noise obtenues
-  float waterThreshold, obstaclesThreshold, foodThreshold;
+  float waterThreshold;
+  
+  ArrayList<Float> obstacleTiles, foodTiles;
   
   // Constructeur initialisant les paramètres de la génération
   public MapGenerator(int w, int h, float waterPerc, float obstaclesPerc, float foodPerc) {
@@ -72,28 +74,35 @@ public class MapGenerator {
     waterThreshold = noiseValuesOneDimension[waterThresholdIndex];
     
     // obstacles
-    int obstacleThresholdIndex = (int)(waterThresholdIndex + ((noiseValuesOneDimension.length - waterThresholdIndex) * obstacleTilesPercentage));
-    obstaclesThreshold = noiseValuesOneDimension[obstacleThresholdIndex];
+    int amountOfObstacleTiles = (int)((noiseValuesOneDimension.length - waterThresholdIndex) * obstacleTilesPercentage);
+    obstacleTiles = new ArrayList<Float>();
+    for (int o = 0; o < amountOfObstacleTiles; o++) {
+      obstacleTiles.add(noiseValuesOneDimension[(int)random(waterThresholdIndex, noiseValuesOneDimension.length)]); 
+    }
     
     // nourriture
-    int foodThresholdIndex = (int)(obstacleThresholdIndex + ((noiseValuesOneDimension.length - obstacleThresholdIndex) * foodTilesPercentage));
-    foodThreshold = noiseValuesOneDimension[foodThresholdIndex];
+    int amountOfFoodTiles = (int)((noiseValuesOneDimension.length - waterThresholdIndex) * foodTilesPercentage);
+    foodTiles = new ArrayList<Float>();
+    for (int f = 0; f < amountOfFoodTiles; f++) {
+      foodTiles.add(noiseValuesOneDimension[(int)random(waterThresholdIndex, noiseValuesOneDimension.length)]);
+    }
   }
   
   // Affiche la map à l'écran
   public void displayMap() {
-    println(waterThreshold + "  " + obstaclesThreshold + "  " + foodThreshold);
+    int count = 0;
     // Enregistrement des nouvelles valeurs des pixels
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         if (noiseValues[x][y] < waterThreshold) {
           pixels[x+y*width] = waterTileColor;
         } 
-        // REMARQUE : il faut répartir aléatoirement les obstacles et la nourriture sur les tiles terrestres
-        else if (noiseValues[x][y] < obstaclesThreshold) {
+        // REMARQUE : il faut répartir aléatoirement les obstacles et la nourriture sur les tiles terrestres, attention à ce qu'il n'y en ait pas qui se répètent!
+        else if (obstacleTiles.contains(noiseValues[x][y])) {
           pixels[x+y*width] = obstacleTileColor;
         }
-        else if (noiseValues[x][y] < foodThreshold) {
+        else if (foodTiles.contains(noiseValues[x][y])) {
+          count++;
           pixels[x+y*width] = foodTileColor;
         }
         else {
@@ -101,7 +110,7 @@ public class MapGenerator {
         }          
       }
     }
-    
+    println(count);
     // Affichage des pixels
     updatePixels();
   }
