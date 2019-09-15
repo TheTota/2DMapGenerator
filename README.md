@@ -1,7 +1,20 @@
-# 2DMapGenerator
-2D map generator made using Processing, adjust settings in code et click to regenerate the map. 
-The generation is based on Perlin Noise.
+# Prototype de génération de map procédurale pour le projet ECOSIM
 
-Example of generation:
+Programme réalisé par Thomas CIANFARANI.
+  
+__Objectifs :__ 
+- mieux comprendre le perlin noise en le mettant en application
+- prototyper la génération de map pour le projet ECOSIM
 
-![Map GenerationExample](https://i.imgur.com/ddCQ6kT.jpg)
+__Détails sur la génération :__
+
+Une map ne peut être composée que de 4 type de cases : 
+  - Case d'eau
+  - Case terrestre produisant de la nourriture
+  - Case terrestre ne produisant pas de nourriture
+  - Case terrestre présentant un obstacle (inaccessible et pas de nourriture)
+
+L'utilisateur est libre de choisir certains paramètres influant sur la génération :
+  - La taille de la map
+  - Le % de case d'eau
+  - Le % de cases terrestres produisant de la nourriture parmis le nombre de cases terrestres
