@@ -21,13 +21,12 @@
 MapGenerator mg;
 
 void setup() { 
-  mg = new MapGenerator(100,100,.2,.3);
+  mg = new MapGenerator(100, 100, .2, .1, .2);
   mg.generateMap();
   mg.displayMap();
 }
 
-void draw() {  
-  
+void draw() {
 }
 
 void mousePressed(){

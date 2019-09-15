@@ -5,7 +5,10 @@ public class MapGenerator {
   // % de cases d'eau  
   public float waterTilesPercentage;
   
-  // % de cases produisant de la nourriture parmis le nb de cases terrestres  
+  // % de cases obstacles (pas accessible et ne produit pas de nourriture) parmis le nb de cases terrestres
+  public float obstacleTilesPercentage;
+  
+  // % de cases produisant de la nourriture parmis le nb de cases terrestres restantes
   public float foodTilesPercentage;
   
   // Couleurs représentant les tiles
@@ -13,16 +16,20 @@ public class MapGenerator {
   // Valeur utilisée pour le parcours du perlin noise
   float increment = 0.01;
   
+  // Stockage des valeurs obtenues avec perlin noise dans des tableaux 1d et 2d
   float[][] noiseValues;
   float[] noiseValuesOneDimension;
-  float waterThreshold;
+  
+  // Stockage des valeurs qui seront déterminées pour seuiller les valeurs de noise obtenues
+  float waterThreshold, obstaclesThreshold, foodThreshold;
   
   // Constructeur initialisant les paramètres de la génération
-  public MapGenerator(int w, int h, float waterPerc, float foodPerc) {
+  public MapGenerator(int w, int h, float waterPerc, float obstaclesPerc, float foodPerc) {
     // Init variables utilisateur
     size(w, h);
     waterTilesPercentage = waterPerc;
     foodTilesPercentage = foodPerc;
+    obstacleTilesPercentage = obstaclesPerc;
     
     // Init variables génération
     noiseValues = new float[w][h];
@@ -59,39 +66,41 @@ public class MapGenerator {
     // Determine thresholds : on trie le tableau à une dimension puis on sélectionne la valeur 
     // à l'index associé au pourcentage de tile de type eau par exemple
     Arrays.sort(noiseValuesOneDimension);
-    waterThreshold = noiseValuesOneDimension[(int)(noiseValuesOneDimension.length * waterTilesPercentage)];
-   // for (int j = 0; j < noiseValuesOneDimension.length; j++) {
-      //println(noiseValuesOneDimension[j]);  
-  //  }
+    
+    // eau
+    int waterThresholdIndex = (int)(noiseValuesOneDimension.length * waterTilesPercentage); // 2000
+    waterThreshold = noiseValuesOneDimension[waterThresholdIndex];
+    
+    // obstacles
+    int obstacleThresholdIndex = (int)(waterThresholdIndex + ((noiseValuesOneDimension.length - waterThresholdIndex) * obstacleTilesPercentage));
+    obstaclesThreshold = noiseValuesOneDimension[obstacleThresholdIndex];
+    
+    // nourriture
+    int foodThresholdIndex = (int)(obstacleThresholdIndex + ((noiseValuesOneDimension.length - obstacleThresholdIndex) * foodTilesPercentage));
+    foodThreshold = noiseValuesOneDimension[foodThresholdIndex];
   }
   
   // Affiche la map à l'écran
   public void displayMap() {
+    println(waterThreshold + "  " + obstaclesThreshold + "  " + foodThreshold);
     // Enregistrement des nouvelles valeurs des pixels
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         if (noiseValues[x][y] < waterThreshold) {
           pixels[x+y*width] = waterTileColor;
         } 
+        // REMARQUE : il faut répartir aléatoirement les obstacles et la nourriture sur les tiles terrestres
+        else if (noiseValues[x][y] < obstaclesThreshold) {
+          pixels[x+y*width] = obstacleTileColor;
+        }
+        else if (noiseValues[x][y] < foodThreshold) {
+          pixels[x+y*width] = foodTileColor;
+        }
         else {
           pixels[x+y*width] = emptyTileColor;
-        }
-          
+        }          
       }
     }
-    
-     /*   if (noiseVal < waterTilesPercentage) {
-          pixels[x+y*width] = waterTileColor;
-        } 
-        else if (noiseVal < waterTilesPercentage + .10) {
-          pixels[x+y*width] = obstacleTileColor;
-        } 
-        else if (noiseVal < waterTilesPercentage + .10 + (1 - (waterTilesPercentage + .10)) * foodTilesPercentage) {
-          pixels[x+y*width] = foodTileColor;
-        }        
-        else {
-          pixels[x+y*width] = emptyTileColor;
-        }*/
     
     // Affichage des pixels
     updatePixels();
